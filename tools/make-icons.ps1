@@ -3,9 +3,12 @@
 # run this, then look at tools\icon-drafts\contact-sheet.png.
 #   pwsh -File tools\make-icons.ps1                 -> the A-E set
 #   pwsh -File tools\make-icons.ps1 -sets shutter  -> the B + shutter set
+#   pwsh -File tools\make-icons.ps1 -sets P3 -pluginIcon -> also install the
+#       plugin-list icon (the P plate design, scaled to the 96 px the manifest
+#       expects). Only that switch writes into plugin\assets.
 # Each design is rendered for every lens palette in $palettes.
 
-param([string[]]$sets = @('all'))
+param([string[]]$sets = @('all'), [switch]$pluginIcon)
 
 Add-Type -AssemblyName System.Drawing
 
@@ -149,7 +152,7 @@ function Shutters { param($g, [double]$x, [double]$y, [double]$d, [int]$count, [
 
 # B4 / B5 - the settled direction: shutter blades over fresnel rings, with the
 # morse marks kept under the lens and no lever. 4 blades vs 5 blades.
-function ShutterLens { param($pal, [int]$blades, [double]$h)
+function ShutterLens { param($pal, [int]$blades, [double]$h, [switch]$noHood, [switch]$noMarks)
   $c = New-Canvas; $bmp = $c[0]; $g = $c[1]
   FillEllipse $g (Brush $steelDark) 14 14 116 116
   DrawEllipse $g (Pen $steelEdge 7) 16 16 112 112
@@ -159,8 +162,8 @@ function ShutterLens { param($pal, [int]$blades, [double]$h)
   }
   Glass $g 42 38 34 18
   Shutters $g 32 32 80 $blades $h
-  DotDash $g (Brush (Col 240 240 240 230)) 52 106 '.-' 9
-  DrawArc $g (Pen $steel 15) 8 6 128 128 202 136
+  if (-not $noMarks) { DotDash $g (Brush (Col 240 240 240 230)) 52 106 '.-' 9 }
+  if (-not $noHood) { DrawArc $g (Pen $steel 15) 8 6 128 128 202 136 }
   foreach ($pt in @(32, 32), @(112, 32), @(32, 112), @(112, 112)) {
     FillEllipse $g (Brush $brass) ($pt[0] - 6) ($pt[1] - 6) 12 12
   }
@@ -168,6 +171,51 @@ function ShutterLens { param($pal, [int]$blades, [double]$h)
 }
 function Design-B4 { param($pal) ShutterLens $pal 4 9 }
 function Design-B5 { param($pal) ShutterLens $pal 5 8 }
+
+# P - the plugin icon, the one the Stream Deck app shows in its plugin list.
+# Unlike a key this sits on the app's own background, which can be light, so
+# the lamp goes on a dark plate of its own and keeps its contrast either way.
+# The lamp is rendered as a key icon and then scaled down onto the plate, so
+# the plugin list and the keys show the same drawing.
+function PluginPlate { param($pal, [int]$blades, [double]$h, [switch]$glow, [switch]$noHood,
+                                   [switch]$morse, [double]$scale = 0.86)
+  $c = New-Canvas; $bmp = $c[0]; $g = $c[1]
+  $plate = RoundedPath 0 0 $S $S 26
+  $g.FillPath((Brush (Col 20 22 26)), $plate)
+  $plate.Dispose()
+  $edge = RoundedPath 1.5 1.5 ($S - 3) ($S - 3) 25
+  $g.DrawPath((Pen (Col 62 68 76) 2.5), $edge)
+  $edge.Dispose()
+  if ($glow) {
+    # Warm halo bleeding past the housing so the lamp still reads as lit at
+    # 28 pixels. A gradient, not rings - rings look like a target when scaled
+    # down.
+    $gp = New-Object System.Drawing.Drawing2D.GraphicsPath
+    $gp.AddEllipse([single]4, [single]4, [single]136, [single]136)
+    $pgb = New-Object System.Drawing.Drawing2D.PathGradientBrush($gp)
+    $pgb.CenterColor = Color_With $pal.lens 165
+    # SurroundColors is an array; one entry applies all the way round.
+    $ring = New-Object System.Drawing.Color[] 1
+    $ring[0] = Color_With $pal.lens 0
+    $pgb.SurroundColors = $ring
+    $pgb.CenterPoint = New-Object System.Drawing.PointF ([single]72), ([single]72)
+    $g.FillPath($pgb, $gp)
+    $pgb.Dispose(); $gp.Dispose()
+  }
+  $lamp = if ($noHood) { ShutterLens $pal $blades $h -noHood -noMarks } else { Design-B4 $pal }
+  $g.InterpolationMode = [System.Drawing.Drawing2D.InterpolationMode]::HighQualityBicubic
+  $size = [single]($S * $scale)
+  $off = [single](($S - $size) / 2)
+  $offY = if ($morse) { $off - 10 } else { $off }
+  $g.DrawImage($lamp, [System.Drawing.RectangleF]::new($off, $offY, $size, $size))
+  $lamp.Dispose()
+  if ($morse) { DotDash $g (Brush (Col 246 242 235 235)) 40 124 '..-.' 9 }
+  return $bmp
+}
+function Design-P1 { param($pal) PluginPlate $pal 4 9 }
+function Design-P2 { param($pal) PluginPlate $pal 4 9 -glow }
+function Design-P3 { param($pal) PluginPlate $pal 4 9 -noHood -glow -scale 0.92 }
+function Design-P4 { param($pal) PluginPlate $pal 4 9 -noHood -glow -morse -scale 0.8 }
 
 # B4 with a dark strip along the bottom of the key. Stream Deck draws the
 # button title there and the bright lens washed it out, so the lamp sits a
@@ -407,6 +455,10 @@ $all = [ordered]@{
   'B3-lever'   = @{ fn = { param($pal) Design-B3 $pal }; note = 'four blades plus shutter lever' }
   'B4-blades4' = @{ fn = { param($pal) Design-B4 $pal }; note = 'previous lamp: 4 blades, rings, morse'; pal = 'warm' }
   'B5-blades5' = @{ fn = { param($pal) Design-B5 $pal }; note = '5 blades over rings, morse kept' }
+  'P1-plate'   = @{ fn = { param($pal) Design-P1 $pal }; note = 'plugin icon: lamp on a dark plate'; pal = 'warm' }
+  'P2-plate'   = @{ fn = { param($pal) Design-P2 $pal }; note = 'plugin icon: same with a warm halo'; pal = 'warm' }
+  'P3-plate'   = @{ fn = { param($pal) Design-P3 $pal }; note = 'plugin icon: no hood arc, gradient glow'; pal = 'warm' }
+  'P4-plate'   = @{ fn = { param($pal) Design-P4 $pal }; note = 'plugin icon: glow plus morse marks on the plate'; pal = 'warm' }
   'T1-strip'   = @{ fn = { param($pal) Design-T1 $pal }; note = 'lamp lifted, dark title strip, morse in strip'; pal = 'warm' }
   'T2-strip'   = @{ fn = { param($pal) Design-T2 $pal }; note = 'taller title strip, lamp lifted more'; pal = 'warm' }
   'T3-strip'   = @{ fn = { param($pal) Design-T3 $pal }; note = 'strip fading in from the top, no hard edge'; pal = 'warm' }
@@ -509,6 +561,24 @@ $sheetPath = Join-Path $out 'contact-sheet.png'
 $sheet.Save($sheetPath, [System.Drawing.Imaging.ImageFormat]::Png)
 "wrote $sheetPath"
 $sheet.Dispose()
+
+# The plugin-list icon, only written when -pluginIcon is asked for. The app
+# shows this one at its own sizes on a background we do not control, which is
+# why it sits on a dark plate instead of the transparent key background.
+if ($pluginIcon) {
+  $pluginDesign = 'P3-plate'
+  $bmp = & $all[$pluginDesign]['fn'] $palettes['warm']
+  $dst = New-Object System.Drawing.Bitmap 96, 96
+  $dg = [System.Drawing.Graphics]::FromImage($dst)
+  $dg.InterpolationMode = [System.Drawing.Drawing2D.InterpolationMode]::HighQualityBicubic
+  $dg.SmoothingMode = [System.Drawing.Drawing2D.SmoothingMode]::AntiAlias
+  $dg.DrawImage($bmp, 0, 0, 96, 96)
+  $bmp.Dispose(); $dg.Dispose()
+  $asset = Join-Path $here '..\plugin\assets\plugin.png'
+  $dst.Save($asset, [System.Drawing.Imaging.ImageFormat]::Png)
+  $dst.Dispose()
+  "wrote plugin icon $pluginDesign -> $((Resolve-Path $asset).Path)"
+}
 
 $html = New-Object System.Text.StringBuilder
 [void]$html.AppendLine('<!doctype html><html><head><meta charset="utf-8"><title>Aldis Lamp - icon drafts</title>')

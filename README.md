@@ -35,6 +35,16 @@ Morse marks in it — collides with the text. `tools/make-icons.ps1 -sets T7`
 redraws the shipped icon; `-sets T5` is the same lamp with `.-` marks in the
 band if you ever want them back.
 
+The plugin-list icon (`plugin/assets/plugin.png`) is the same lamp sitting on a
+dark plate, which is what the `P` designs are for: a key always sits on the
+Stream Deck background, but the app draws this one wherever it likes, including
+on light panels. `-sets P1,P2,P3,P4` drafts them, and `-sets P3 -pluginIcon`
+installs the chosen one at the 96 px the manifest wants. `tools/icon-sizes.ps1
+-Names P1-plate,P2-plate,P3-plate,P4-plate` draws any drafts at 96, 48 and 28 px
+on both a dark and a light background — the hood arc and the small Morse marks
+that read fine at 144 turn to mush by 48 px, which is why the shipped plate has
+neither.
+
 The game key (default `L`) is a **toggle**, so every lit Morse element is an
 even pair of taps: tap (light on) → element length → tap (light out). The
 lamp is back in its previous state after every element, so nothing can get
@@ -150,7 +160,9 @@ animation is missing. Key Inject behaves identically for the same reason.
 - `tools/make-icons.ps1` — draws the key artwork (the shuttered signal-lens
   lamp) with GDI+; drafts and a `preview.html` comparison page land in
   `tools/icon-drafts/`. Run it with `-sets B4,T7,S4` to redraw only some
-  designs — `T7` is the lamp icon with the empty title band. `build.ps1` keeps
+  designs — `T7` is the lamp icon with the empty title band, `P3` is the plugin-list plate, installed with
+   `-sets P3 -pluginIcon`, and `tools/icon-sizes.ps1` shows drafts at the small
+   sizes the app uses. `build.ps1` keeps
   whatever is in `plugin/assets` and
   only falls back to its own simple placeholders when run with `-regenIcons`.
 - Log: `%LOCALAPPDATA%\AldisLamp\bridge.log`.
