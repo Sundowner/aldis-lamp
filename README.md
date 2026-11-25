@@ -184,3 +184,12 @@ context, so they never animate a key.
 - Morse timing feels wrong → check **WPM**; at 8 WPM a dot is 150 ms.
 - The lamp ends up lit after fiddling → press **Lamp off** or the **Stop**
   button.
+
+
+## License
+
+GPL-3.0-only, full text in `LICENSE`; the source files carry the
+`SPDX-License-Identifier: GPL-3.0-only` header. In short: use it, change it,
+redistribute it, sell it if you like — but anything you distribute that builds
+on this has to ship its source under the same licence and be marked as changed.
+Copyright 2026 Sundowner.

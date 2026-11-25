@@ -2,7 +2,7 @@
   "$schema": "https://schemas.elgato.com/streamdeck/plugins/manifest.json",
   "Name": "Aldis Lamp",
   "Author": "Sundowner",
-  "Version": "1.1.9",
+  "Version": "1.1.10",
   "Description": "Star Citizen virtual Aldis lamp: sends Morse phrases, single dots/dashes and lamp on/off toggles with correct PARIS timing (WPM). Each key recharges with a ring animated for exactly as long as its send takes. Includes a Stop action to cancel and extinguish. Windows only.",
   "Icon": "assets/plugin",
   "UUID": "com.sundowner.aldislamp",
