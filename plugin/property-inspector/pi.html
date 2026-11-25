@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Aldis Lamp</title>
+<link rel="stylesheet" href="pi.css">
+</head>
+<body>
+  <div class="wrap">
+    <div class="row top">
+      <span class="brand">Aldis Lamp</span>
+      <span id="status" class="pill off" title="Bridge app that taps the game key">bridge: connecting…</span>
+    </div>
+
+    <div class="row">
+      <label for="mode">Mode</label>
+      <select id="mode">
+        <option value="phrase">Morse phrase</option>
+        <option value="dot">Single dot</option>
+        <option value="dash">Single dash</option>
+        <option value="on">Lamp on</option>
+        <option value="off">Lamp off</option>
+      </select>
+    </div>
+
+    <div class="row" id="phraseRow">
+      <label for="text">Phrase</label>
+      <input id="text" type="text" spellcheck="false" autocomplete="off"
+             placeholder="CQ BT DE SUNDOWNER">
+      <div class="chips" id="libraryRow">
+        <select id="signals"></select>
+        <div class="hint" id="signalNote">Pick a signal and it goes straight into the phrase,
+          with its meaning here. WW2 meanings come from B.R. 232 Signal Card (1937), U.S. FTP
+          223A (1945) and the British-US BUSCI convoy instructions; the last two groups are
+          modern ICS and unsourced folklore, and are labelled as such.</div>
+        <div class="keysline">
+          <button id="addSignal" class="btn small" title="Append the currently selected signal again">Add again</button>
+          <button id="clearText" class="btn small" title="Empty the phrase">Clear</button>
+        </div>
+      </div>
+      <div class="hint">Choosing a signal adds it to the phrase straight away, saves it and
+        retitles the key. <b>Add again</b> repeats the one you picked. Unknown characters are
+        skipped.</div>
+    </div>
+
+    <div class="row" id="wpmRow">
+      <label for="wpm">Speed (WPM, PARIS)</label>
+      <select id="wpm">
+        <option value="5">5</option>
+        <option value="6">6</option>
+        <option value="8" selected>8</option>
+        <option value="10">10</option>
+        <option value="12">12</option>
+        <option value="15">15</option>
+        <option value="20">20</option>
+      </select>
+    </div>
+
+    <div class="row" id="titleRow">
+      <label class="check" for="wpmInTitle">
+        <input id="wpmInTitle" type="checkbox" checked>
+        <span>Show the WPM count in the title</span>
+      </label>
+      <div class="hint">With the box unticked and the title field left empty, the key reads
+        <code>≡ HEAVE TO</code> instead of <code>≡ HEAVE TO 12w</code>. A title you type
+        yourself always wins.</div>
+    </div>
+
+    <div class="row" id="cooldownRow">
+      <label for="cooldown">Cooldown</label>
+      <input id="cooldown" type="number" min="0" max="120" step="0.5" placeholder="auto">
+      <button id="cooldownTest" class="btn small" title="Play the ring on this key without sending any keystrokes">Preview</button>
+      <div class="hint" id="cooldownHint">Leave it empty and the key recharges for exactly as
+        long as the send takes; the ring on the key counts that down. Type a number of seconds
+        to force a longer wait. Presses while the ring is still running are ignored.</div>
+    </div>
+
+    <div class="row">
+      <label for="lampKey">Game key (toggles the lamp)</label>
+      <div class="keysline">
+        <input id="lampKey" type="text" spellcheck="false" autocomplete="off" value="l">
+        <button id="detect" class="btn small" title="Scan Star Citizen keybind files for the ship lights key">Detect</button>
+      </div>
+      <div class="hint" id="detectHint">Default <code>L</code>. Star Citizen toggles the lights with one key; every lit element sends it twice (on, then off).</div>
+    </div>
+
+    <div class="row buttons">
+      <button id="testDot" class="btn" title="Send one dot now">• Dot</button>
+      <button id="testDash" class="btn" title="Send one dash now">— Dash</button>
+    </div>
+    <div class="row buttons">
+      <button id="testOn" class="btn">Lamp on</button>
+      <button id="testOff" class="btn">Lamp off</button>
+      <button id="stopBtn" class="btn warn" title="Cancel running send, clear queue, extinguish lamp">Stop</button>
+    </div>
+
+    <div class="row">
+      <label for="title">Button title</label>
+      <input id="title" type="text" placeholder="auto">
+    </div>
+  </div>
+
+  <!-- Self-contained: talks to Stream Deck over the documented manual
+       WebSocket protocol (connectElgatoStreamDeckSocket in pi.js). -->
+  <script src="pi.js"></script>
+</body>
+</html>

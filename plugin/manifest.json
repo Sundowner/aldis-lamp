@@ -1,0 +1,46 @@
+{
+  "$schema": "https://schemas.elgato.com/streamdeck/plugins/manifest.json",
+  "Name": "Aldis Lamp",
+  "Author": "Sundowner",
+  "Version": "1.1.8",
+  "Description": "Star Citizen virtual Aldis lamp: sends Morse phrases, single dots/dashes and lamp on/off toggles with correct PARIS timing (WPM). Each key recharges with a ring animated for exactly as long as its send takes. Includes a Stop action to cancel and extinguish. Windows only.",
+  "Icon": "assets/plugin",
+  "UUID": "com.sundowner.aldislamp",
+  "SDKVersion": 2,
+  "Software": { "MinimumVersion": "6.4" },
+  "OS": [ { "Platform": "windows", "MinimumVersion": "10" } ],
+  "CodePath": "windows/aldis-bridge.exe",
+  "SupportURL": "https://github.com/",
+
+  "Actions": [
+    {
+      "Name": "Aldis Lamp",
+      "UUID": "com.sundowner.aldislamp.lamp",
+      "Icon": "assets/action",
+      "PropertyInspectorPath": "property-inspector/pi.html",
+      "Controllers": ["Keypad"],
+      "SupportedInMultiActions": true,
+      "Tooltip": "Signal with the ship's Aldis lamp: Morse phrase, dot, dash, or lamp on/off",
+      "States": [
+        {
+          "Image": "assets/action",
+          "TitleAlignment": "bottom"
+        }
+      ]
+    },
+    {
+      "Name": "Aldis Stop",
+      "UUID": "com.sundowner.aldislamp.stop",
+      "Icon": "assets/stop",
+      "Controllers": ["Keypad"],
+      "SupportedInMultiActions": true,
+      "Tooltip": "Cancel the running send, clear the queue and extinguish the lamp",
+      "States": [
+        {
+          "Image": "assets/stop",
+          "TitleAlignment": "bottom"
+        }
+      ]
+    }
+  ]
+}
